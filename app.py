@@ -35,12 +35,14 @@ df.columns = df.columns.str.strip()
 
 for coluna in ["Peso", "Altura", "IMC"]:
 
-    df[coluna] = pd.to_numeric(
-        df[coluna]
-        .astype(str)
-        .str.replace(",", "."),
-        errors="coerce"
-    )
+    if coluna in df.columns:
+
+        df[coluna] = pd.to_numeric(
+            df[coluna]
+            .astype(str)
+            .str.replace(",", "."),
+            errors="coerce"
+        )
 
 # =====================================
 # INTERFACE
@@ -79,12 +81,13 @@ pergunta = st.text_input(
 
 if pergunta:
 
+    pergunta_original = pergunta
     pergunta = pergunta.lower()
 
     st.divider()
 
     st.subheader("Pergunta")
-    st.write(pergunta)
+    st.write(pergunta_original)
 
     # =====================================
     # DETETAR COLUNAS
@@ -192,20 +195,24 @@ if pergunta:
 
         numeros = re.findall(r"\d+[.,]?\d*", pergunta)
 
-        numero = float(numeros[0].replace(",", "."))
+        if len(numeros) > 0:
 
-        resultado = df[df[coluna] > numero]
+            numero = float(
+                numeros[0].replace(",", ".")
+            )
 
-        st.subheader("Resultado")
+            resultado = df[df[coluna] > numero]
 
-        st.write(
-            f"{len(resultado)} pessoas "
-            f"com {coluna} acima de {numero}"
-        )
+            st.subheader("Resultado")
 
-        st.write(resultado)
+            st.write(
+                f"{len(resultado)} pessoas "
+                f"com {coluna} acima de {numero}"
+            )
 
-        st.bar_chart(resultado[coluna])
+            st.write(resultado)
+
+            st.bar_chart(resultado[coluna])
 
     # =====================================
     # ABAIXO DE
@@ -219,20 +226,24 @@ if pergunta:
 
         numeros = re.findall(r"\d+[.,]?\d*", pergunta)
 
-        numero = float(numeros[0].replace(",", "."))
+        if len(numeros) > 0:
 
-        resultado = df[df[coluna] < numero]
+            numero = float(
+                numeros[0].replace(",", ".")
+            )
 
-        st.subheader("Resultado")
+            resultado = df[df[coluna] < numero]
 
-        st.write(
-            f"{len(resultado)} pessoas "
-            f"com {coluna} abaixo de {numero}"
-        )
+            st.subheader("Resultado")
 
-        st.write(resultado)
+            st.write(
+                f"{len(resultado)} pessoas "
+                f"com {coluna} abaixo de {numero}"
+            )
 
-        st.bar_chart(resultado[coluna])
+            st.write(resultado)
+
+            st.bar_chart(resultado[coluna])
 
     # =====================================
     # ENTRE
@@ -241,30 +252,40 @@ if pergunta:
     elif (
         "entre" in pergunta
         and coluna
-        and len(re.findall(r"\d+[.,]?\d*", pergunta)) >= 2
     ):
 
-        numeros = re.findall(r"\d+[.,]?\d*", pergunta)
-
-        n1 = float(numeros[0].replace(",", "."))
-        n2 = float(numeros[1].replace(",", "."))
-
-        resultado = df[
-            (df[coluna] >= n1)
-            &
-            (df[coluna] <= n2)
-        ]
-
-        st.subheader("Resultado")
-
-        st.write(
-            f"{len(resultado)} pessoas "
-            f"com {coluna} entre {n1} e {n2}"
+        numeros = re.findall(
+            r"\d+[.,]?\d*",
+            pergunta
         )
 
-        st.write(resultado)
+        if len(numeros) >= 2:
 
-        st.bar_chart(resultado[coluna])
+            n1 = float(
+                numeros[0].replace(",", ".")
+            )
+
+            n2 = float(
+                numeros[1].replace(",", ".")
+            )
+
+            resultado = df[
+                (df[coluna] >= n1)
+                &
+                (df[coluna] <= n2)
+            ]
+
+            st.subheader("Resultado")
+
+            st.write(
+                f"{len(resultado)} pessoas "
+                f"com {coluna} entre "
+                f"{n1} e {n2}"
+            )
+
+            st.write(resultado)
+
+            st.bar_chart(resultado[coluna])
 
     # =====================================
     # CORRELAÇÃO
@@ -283,7 +304,9 @@ if pergunta:
 
             dados = df[colunas].dropna()
 
-            correlacao = dados[colunas[0]].corr(
+            correlacao = dados[
+                colunas[0]
+            ].corr(
                 dados[colunas[1]]
             )
 
@@ -291,8 +314,9 @@ if pergunta:
 
             st.write(
                 f"A correlação entre "
-                f"{colunas[0]} e {colunas[1]} "
-                f"é: {correlacao:.2f}"
+                f"{colunas[0]} e "
+                f"{colunas[1]} é "
+                f"{correlacao:.2f}"
             )
 
             if correlacao > 0.7:
@@ -321,7 +345,8 @@ if pergunta:
                 )
 
             st.write(
-                f"Interpretação: {interpretacao}"
+                f"Interpretação: "
+                f"{interpretacao}"
             )
 
             st.scatter_chart(
@@ -351,7 +376,11 @@ if pergunta:
 
         resultados = []
 
-        for var in ["Peso", "Altura", "IMC"]:
+        for var in [
+            "Peso",
+            "Altura",
+            "IMC"
+        ]:
 
             dados = df[var].dropna()
 
@@ -362,10 +391,14 @@ if pergunta:
                 "Estatística": round(stat, 4),
                 "Valor-p": round(p, 4),
                 "Normal?":
-                    "Sim" if p > 0.05 else "Não"
+                    "Sim"
+                    if p > 0.05
+                    else "Não"
             })
 
-        resultados_df = pd.DataFrame(resultados)
+        resultados_df = pd.DataFrame(
+            resultados
+        )
 
         st.write(resultados_df)
 
@@ -385,13 +418,16 @@ if pergunta:
             "IMC": df["IMC"].std()
         }
 
-        maior = max(desvios, key=desvios.get)
+        maior = max(
+            desvios,
+            key=desvios.get
+        )
 
         st.subheader("Resultado")
 
         st.write(
-            f"A variável com maior dispersão "
-            f"é {maior}"
+            f"A variável com maior "
+            f"dispersão é {maior}"
         )
 
         st.write(desvios)
@@ -413,13 +449,16 @@ if pergunta:
             "IMC": df["IMC"].std()
         }
 
-        menor = min(desvios, key=desvios.get)
+        menor = min(
+            desvios,
+            key=desvios.get
+        )
 
         st.subheader("Resultado")
 
         st.write(
-            f"A variável mais homogénea "
-            f"é {menor}"
+            f"A variável mais "
+            f"homogénea é {menor}"
         )
 
         st.write(desvios)
@@ -482,15 +521,19 @@ if pergunta:
         st.write(df.describe())
 
     # =====================================
-    # CONTAGEM
+    # CONTAGEM TOTAL
     # =====================================
 
-    elif "quantas pessoas" in pergunta:
+    elif (
+        "quantas pessoas" in pergunta
+        or "número de pessoas" in pergunta
+    ):
 
         st.subheader("Resultado")
 
         st.write(
-            f"Número total de pessoas: {len(df)}"
+            f"Número total de pessoas: "
+            f"{len(df)}"
         )
 
     # =====================================
@@ -507,21 +550,24 @@ if pergunta:
                     {
                         "role": "system",
                         "content": """
-                        És especialista em nutrição
-                        clínica hospitalar.
+                        És especialista em
+                        nutrição clínica hospitalar.
 
-                        Responde de forma científica,
-                        resumida e profissional.
+                        Responde de forma
+                        científica, resumida
+                        e profissional.
                         """
                     },
                     {
                         "role": "user",
-                        "content": pergunta
+                        "content": pergunta_original
                     }
                 ]
             )
 
-            texto = resposta.choices[0].message.content
+            texto = resposta.choices[
+                0
+            ].message.content
 
             st.subheader("Resposta IA")
 
@@ -540,6 +586,6 @@ if pergunta:
 st.divider()
 
 st.caption(
-    "Protótipo académico NutriData+ "
-    "baseado em IA clínica."
+    "Protótipo académico "
+    "NutriData+ baseado em IA clínica."
 )
