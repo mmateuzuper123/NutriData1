@@ -8,7 +8,7 @@ from scipy.stats import shapiro
 # CONFIGURAÇÃO
 # =====================================
 
-API_KEY = "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"
+API_KEY = st.secrets["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"]
 
 CSV_FILE = "dados.csv"
 
