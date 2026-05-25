@@ -545,8 +545,8 @@ if pergunta:
         try:
 
             resposta = client.chat.completions.create(
-                model="openai/gpt-3.5-turbo",
-                messages=[
+    model="openai/gpt-3.5-turbo",
+    messages=[
                     {
                         "role": "system",
                         "content": """
